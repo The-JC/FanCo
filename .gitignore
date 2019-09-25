@@ -63,3 +63,4 @@ mx.scratch
 *.cproj
 *.componentinfo
 *.atsln
+*.xml
