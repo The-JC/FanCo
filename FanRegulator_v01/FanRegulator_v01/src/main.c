@@ -33,20 +33,34 @@ void receiveEvent(uint8_t num_bytes) {
 	}
 
 	//mode
+	uint16_t buffer;
 	switch (master_data[0]) {
 		case 0x00:
 			//rpm
-			w = master_data[1];
-			w = (w << 8) + master_data[2];
+			buffer = master_data[1];
+			buffer = (buffer << 8) + master_data[2];
+			w = buffer;
 			break;
 		case 0x01:
 			//p
+			buffer = master_data[1];
+			buffer = (buffer << 8) + master_data[2];
+			float kp = buffer/(double)1000;
+			setKp(kp);
 			break;
 		case 0x02:
 			//i
+			buffer = master_data[1];
+			buffer = (buffer << 8) + master_data[2];
+			float ki = buffer/(double)1000;
+			setKi(ki);
 			break;
 		case 0x03:
 			//d
+			buffer = master_data[1];
+			buffer = (buffer << 8) + master_data[2];
+			float kd = buffer/(double)1000;
+			setKd(kd);
 			break;
 	}
 }
@@ -77,15 +91,15 @@ void checkEvent() {
 
 int main(void) {
 	
-	//set
-	w = 1000;
+	//default
+	w = 0;
 	x = 0;
 	counter = 0;
 	
-	//correction
-	factor = 2*COUNTS_PER_ROTATION*(F_CPU/(float)PRESCALER/256)*1000;
+	//correction factor
+	factor = 2*COUNTS_PER_ROTATION*(F_CPU/(float)TIMER_PRESCALER/256)*1000;
 	
-	//i2c begin
+	//i2c init
     usiTwiSlaveInit(ADRESS);
 	
 	//i2c callback
@@ -97,9 +111,7 @@ int main(void) {
 	onCheck = *checkEvent;
 	
 	//pid
-	setKp(0.7);
-	setKi(0.3);
-	setKp(0.05);
+	pidInit(KP, KI, KD);
 	setDt(REFRESH_SPEED);
 	
 	//disable interrupts
@@ -107,12 +119,12 @@ int main(void) {
 	
 	//pwm
 	pwmInit();
-	setFrequency(10000);
+	setFrequency(PWM_FREQUENCY);
 
 	//pin change
 	pinChangeInit(3);
 	
-	//interrupt
+	//timer interrupt
 	ovfInit(REFRESH_SPEED);
 	
 	//enable interrupts

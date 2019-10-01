@@ -5,9 +5,10 @@
  */ 
 
 #include "pwm.h"
+#include "config.h"
 
 //local variables
-uint8_t power;
+uint8_t power, range;
 uint32_t frequenz;
 
 //public functions
@@ -16,17 +17,21 @@ void pwmInit() {
 	//enable fast pwm
 	TCCR0A |= (1<<WGM02)|(1<<WGM01)|(1<<WGM00)|(1<<COM0B1);
 
-	//frequenz 10kHz
+	//prescaler 1
 	TCCR0B = 0;
 	TCCR0B |= (1<<WGM02)|(1 << CS00);
-
-	//top value
-	OCR0A = 100;
 }
 
 void setFrequency(uint32_t f) {
 	
+	//frequency
 	frequenz = f;
+	
+	//range
+	range = F_CPU/(PWM_PRESCALER*frequenz);
+	
+	//top value
+	OCR0A = range;
 }
 
 uint32_t getFrequency() {
@@ -37,11 +42,11 @@ uint32_t getFrequency() {
 void setDuCy(uint8_t p) {
 	
 	//duty-cicle
-	power = p;
+	power = (uint32_t)(range*p)/100;
 	OCR0B = power;
 }
 
 uint8_t getDuCy() {
 	
-	return power;
+	return (uint32_t)(100*power)/range;
 }

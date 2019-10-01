@@ -15,8 +15,27 @@ void pinChangeInit(uint8_t pin) {
 	//enable pin change interrupt
 	GIMSK |= (1<<PCIE);
 
-	//interrupt on pcint3
-	PCMSK |= (1<<PCINT3);
+	//interrupt pin
+	switch(pin) {
+		case 0:
+			PCMSK |= (1<<PCINT0);
+			break;
+		case 1:
+			PCMSK |= (1<<PCINT1);
+			break;
+		case 2:
+			PCMSK |= (1<<PCINT2);
+			break;
+		case 3:
+			PCMSK |= (1<<PCINT3);
+			break;
+		case 4:
+			PCMSK |= (1<<PCINT4);
+			break;
+		case 5:
+			PCMSK |= (1<<PCINT5);
+			break;
+	}
 }
 
 void ovfInit(float sec) {

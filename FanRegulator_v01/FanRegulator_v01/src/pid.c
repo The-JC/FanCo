@@ -7,15 +7,21 @@
 #include "pid.h"
 
 //local variables
-double Kp;
-double Ki;
-double Kd;
-
-int integral;
-int previousError;
-int dt;
+float Kp, Kd, Ki, dt;
+int integral, previousError;
 
 //public functions
+void pidInit(float p, float i, float d) {
+	
+	//set
+	integral = 0;
+	previousError = 0;
+	
+	Kp = p;
+	Ki = i;
+	Kd = d;
+}
+
 uint8_t control(uint16_t x, uint16_t w) {
 
 	//init variables
@@ -29,6 +35,7 @@ uint8_t control(uint16_t x, uint16_t w) {
 	
 	//derivative
 	derivative = (e - previousError) / dt;
+	previousError = e;
 	
 	//sum up control values
 	out = Kp*e + integral*Ki + derivative * Kd;
@@ -40,22 +47,22 @@ uint8_t control(uint16_t x, uint16_t w) {
 	return out;
 }
 
-void setKp(double kp) {
+void setKp(float kp) {
 	
 	Kp = kp;
 }
 
-void setKi(double ki) {
+void setKi(float ki) {
 	
 	Ki = ki;
 }
 
-void setKd(double kd) {
+void setKd(float kd) {
 	
 	Kd = kd;
 }
 
-void setDt(int t) {
+void setDt(float t) {
 	
 	dt = t;
 }

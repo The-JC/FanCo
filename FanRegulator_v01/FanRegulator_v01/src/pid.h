@@ -12,10 +12,11 @@
 #include <avr/io.h>
 
 //prototypes
+void pidInit(float, float, float);
 uint8_t control(uint16_t, uint16_t);
-void setKp(double);
-void setKi(double);
-void setKd(double);
-void setDt(int);
+void setKp(float);
+void setKi(float);
+void setKd(float);
+void setDt(float);
 
 #endif /* PID_H_ */
