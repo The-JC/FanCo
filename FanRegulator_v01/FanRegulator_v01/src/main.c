@@ -86,7 +86,7 @@ void checkEvent() {
 	counter = 0;
 	
 	//pid correction
-	OCR0B = control(x, w);
+	setDuCy(control(x, w));
 }
 
 int main(void) {

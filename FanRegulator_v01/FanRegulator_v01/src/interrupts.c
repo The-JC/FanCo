@@ -64,11 +64,17 @@ float getOvf(void) {
 
 ISR(TIMER1_OVF_vect) {
 	
+	//lower priority
+	sei();
+	
 	//callback
 	onCheck();
 }
 
 ISR(PCINT0_vect) {
+	
+	//lower priority
+	sei();
 	
 	//callback
 	onChange();

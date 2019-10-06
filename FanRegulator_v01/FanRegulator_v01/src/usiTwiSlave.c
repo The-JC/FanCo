@@ -350,7 +350,10 @@ flushTwiBuffers(
 
 // initialise USI for TWI slave mode
 
-void TinyWireS_stop_check()
+void
+TinyWireS_stop_check(
+void
+)
 {
 	if (!usi_onReceiverPtr)
 	{
@@ -434,8 +437,6 @@ usiTwiTransmitByte(
   uint8_t data
 )
 {
-
-  uint8_t tmphead;
 
   // wait for free space in buffer
   while ( txCount == TWI_TX_BUFFER_SIZE) ;

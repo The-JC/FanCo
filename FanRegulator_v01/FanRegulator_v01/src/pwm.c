@@ -12,7 +12,7 @@ uint8_t power, range;
 uint32_t frequenz;
 
 //public functions
-void pwmInit() {
+void pwmInit(void) {
 	
 	//enable fast pwm
 	TCCR0A |= (1<<WGM02)|(1<<WGM01)|(1<<WGM00)|(1<<COM0B1);
@@ -46,7 +46,7 @@ void setDuCy(uint8_t p) {
 	OCR0B = power;
 }
 
-uint8_t getDuCy() {
+uint8_t getDuCy(void) {
 	
 	return (uint32_t)(100*power)/range;
 }
