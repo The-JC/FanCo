@@ -9,36 +9,39 @@
 //local variables
 float Kp, Kd, Ki, dt;
 int integral, previousError;
+uint16_t max_speed;
 
 //public functions
-void pidInit(float p, float i, float d) {
+void pidInit(float p, float i, float d, uint16_t mp) {
 	
-	//set
+	//default
 	integral = 0;
 	previousError = 0;
-	
 	Kp = p;
 	Ki = i;
 	Kd = d;
+	max_speed = mp;
 }
 
 uint8_t control(uint16_t x, uint16_t w) {
 
 	//init variables
-	int derivative, out;
+	int derivative, out, e;	//overflow bug derivative (int to long)
 	
 	//control error
-	int e = (w-(int32_t)x)/18;
+	e = w-x;
 	
 	//integral
-	integral += e*dt;
+	integral += e*dt/20;
+	if(integral>100) integral=100;
+	if(integral<-100) integral=-100;
 	
 	//derivative
-	derivative = (e - previousError) / dt;
+	derivative = (e - previousError) / (dt*20);
 	previousError = e;
 	
 	//sum up control values
-	out = Kp*e + integral*Ki + derivative * Kd;
+	out = Kp*e/20 + integral*Ki + derivative * Kd;
 	
 	//scale
 	if(out>100) out=100;
@@ -49,20 +52,24 @@ uint8_t control(uint16_t x, uint16_t w) {
 
 void setKp(float kp) {
 	
+	//set p value
 	Kp = kp;
 }
 
 void setKi(float ki) {
-	
+
+	//set i value
 	Ki = ki;
 }
 
 void setKd(float kd) {
 	
+	//set d value
 	Kd = kd;
 }
 
 void setDt(float t) {
 	
+	//set refresh speed
 	dt = t;
 }

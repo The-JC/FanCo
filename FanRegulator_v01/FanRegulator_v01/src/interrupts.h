@@ -15,7 +15,6 @@
 //prototypes
 void pinChangeInit(uint8_t);
 void ovfInit(float);
-void setOvf(float);
 float getOvf(void);
 void (*onChange)(void);
 void (*onCheck)(void);

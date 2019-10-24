@@ -41,7 +41,7 @@ uint32_t getFrequency() {
 
 void setDuCy(uint8_t p) {
 	
-	//duty-cicle
+	//set duty-cicle
 	power = (uint32_t)(range*p)/100;
 	OCR0B = power;
 }

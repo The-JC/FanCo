@@ -52,11 +52,6 @@ void ovfInit(float sec) {
 	TIMSK |= (1<<TOIE1);
 }
 
-void setOvf(float sec) {
-	
-	seconds = sec;
-}
-
 float getOvf(void) {
 	
 	return seconds;

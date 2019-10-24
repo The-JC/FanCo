@@ -19,13 +19,14 @@
 
 //fan specific
 #define COUNTS_PER_ROTATION 2
+#define MAX_SPEED 2000
 
 //calculation speed in sec
 #define REFRESH_SPEED 1
 
 //pid values
-#define KP 0.7
-#define KI 0.3
+#define KP 0.9
+#define KI 0.7
 #define KD 0.05
 
 //do not change

@@ -12,7 +12,7 @@
 #include <avr/io.h>
 
 //prototypes
-void pidInit(float, float, float);
+void pidInit(float, float, float, uint16_t);
 uint8_t control(uint16_t, uint16_t);
 void setKp(float);
 void setKi(float);

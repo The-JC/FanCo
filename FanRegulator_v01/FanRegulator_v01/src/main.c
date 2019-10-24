@@ -16,13 +16,13 @@
 
 //init
 uint16_t x, w;
-uint8_t counter;
+uint16_t counter;
 float factor;
 
 //communication
-uint8_t i2cRegister[2];
-uint8_t master_data[3];
-uint8_t master_bytes;
+volatile uint8_t i2cRegister[3];
+volatile uint8_t master_data[3];
+volatile uint8_t master_bytes;
 
 void receiveEvent(uint8_t num_bytes) {
 	
@@ -68,7 +68,7 @@ void receiveEvent(uint8_t num_bytes) {
 void requestEvent() {
 
 	//send to master
-	for(uint8_t i=0; i<2; i++) {
+	for(uint8_t i=0; i<3; i++) {
 		usiTwiTransmitByte(i2cRegister[i]);
 	}
 }
@@ -111,7 +111,7 @@ int main(void) {
 	onCheck = *checkEvent;
 	
 	//pid
-	pidInit(KP, KI, KD);
+	pidInit(KP, KI, KD, MAX_SPEED);
 	setDt(REFRESH_SPEED);
 	
 	//disable interrupts
@@ -141,6 +141,7 @@ int main(void) {
 		//split bytes for communication
 		i2cRegister[0] = (uint8_t) (x >> 8);
 		i2cRegister[1] = (uint8_t) x;
+		i2cRegister[2] = (uint8_t) getDuCy();
     }
 }
 
