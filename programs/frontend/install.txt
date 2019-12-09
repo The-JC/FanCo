@@ -1,0 +1,7 @@
+install:
+npm install --save-dev electron
+npm install chart.js --save
+
+links:
+https://lospec.com/palette-list/sweetie-16
+https://www.1001fonts.com/monospaced-fonts.html
