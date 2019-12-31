@@ -28,6 +28,6 @@
 //do not change
 #define F_CPU 1000000
 #define PWM_PRESCALER 1
-#define PWM_PIN 3;
+#define PWM_PIN 3
 
 #endif /* CONFIG_H_ */
