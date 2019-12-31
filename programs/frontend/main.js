@@ -1,15 +1,21 @@
+
 const electron = require('electron');
 const url = require('url');
 const path = require('path');
 const request = require('request');
 const gpio = require('onoff').Gpio;
 
-const {app, BrowserWindow, ipcMain} = electron;
+const {app, BrowserWindow, ipcMain, globalShortcut} = electron;
+
+const NUMFANS = 18;
+const API = 'http://localhost:5000/'
 
 const button = new gpio(16, 'in', 'rising', {debounceTimeout: 10});
 const status = new gpio(20, 'in');
 const clock = new gpio(21, 'in', 'rising');
 const vcc = new gpio(12, 'high');
+
+let errorState = 0;
 
 let mainWindow;
 let position=0;
@@ -21,7 +27,7 @@ let cData = new Array();
 app.on('ready', function(){
 	for(var i=0; i<18; i++) {
 		data[i] = new Object();
-		data[i]['sollRPM'] = 2000+i;
+		data[i]['sollRPM'] = 0;
 		data[i]['istRPM'] = 0;
 	}
 	for(var i=0; i<18; i++) {
@@ -29,8 +35,8 @@ app.on('ready', function(){
 	}
 	//create new window
 	mainWindow = new BrowserWindow({
-		//width: 800,
-		//height: 480,
+		width: 800,
+		height: 480,
 		frame: false,
 		webPreferences: {
 			nodeIntegration: true
@@ -66,23 +72,40 @@ function loadInfoWindow() {
 }
 
 function handleTimer() {
-	request('http://localhost:5000/api/fans', function(err, res, body) {
-		var obj = JSON.parse(body);
+	request(API+'api/fans', function(err, res, body) {
+		if(err) errorHandler(err);
+		try {
+			var obj = JSON.parse(body);
+		} catch(e) {
+			errorHandler(e);
+			return;
+		}
+		// clearErrorState();
 		for(var i=0; i<18; i++) {
 			data[i].istRPM = obj[i];
 			cData[i][cData[i].length] = obj[i];
+			if(cData[i].length > 120) {
+				cData[i].shift()
+			}
 		}
 		mainWindow.webContents.send('item:rpm', data);
 		mainWindow.webContents.send('item:data', cData[position]);
 	});
 }
 
-button.watch(function(err, value) {
-	if(err) {
-		console.log('ERROR!');
-		return;
-	}
-	//btn
+app.on('ready', () => {
+	globalShortcut.register("Space", () => {
+		buttonHandler();
+	});
+	globalShortcut.register("Left", () => {
+		encoderHandler(0);
+	});
+	globalShortcut.register("Right", () => {
+		encoderHandler(1);
+	});
+});
+
+function buttonHandler() {
 	if(modi==0) {
 		loadInfoWindow();
 		modi=1;
@@ -91,6 +114,47 @@ button.watch(function(err, value) {
 		modi=0;
 		position=0;
 	}
+}
+
+/**
+ * Handling encoder actions
+ * @param {num} dir 0 equals left by one, 1 equals right by one
+ */
+function encoderHandler(dir) {
+	switch(modi) {
+		case 0:
+			if(dir)
+				if(position>=NUMFANS-1) position=0; else ++position;	// increment positon by 1
+			else
+				if(position<=0) position=NUMFANS-1; else --position; 	// decrement position by 1
+			mainWindow.webContents.send('item:position', position);
+			break;
+		case 1:
+				data[position].sollRPM += dir ? 1 : -1;
+				mainWindow.webContents.send('item:rpm', data);
+
+				request.put({
+					url: API+ 'api/fans/' + position,
+					json: {
+						"set_speed": data[position].sollRPM
+					}
+					}, (err, res, body) => {
+						if(err)
+							errorHandler(err);
+					}
+				);
+				break;
+		default:
+			throw 'Invalid mode';
+	}
+}
+
+button.watch(function(err, value) {
+	if(err) {
+		console.log('ERROR!');
+		return;
+	}
+	buttonHandler();
 });
 
 clock.watch(function(err, value) {
@@ -100,49 +164,20 @@ clock.watch(function(err, value) {
 	}
 	if(status.readSync() === 0) {
 		//links
-		if(modi==0) {
-			if(position<=0) {
-				position=17;
-			} else {
-				position--;
-			}
-			mainWindow.webContents.send('item:position', position);
-		} else if(modi==1 && data[position].sollRPM != 0) {
-			data[position].sollRPM-=1;
-			mainWindow.webContents.send('item:rpm', data);
-			//post request
-			var arr = new Array();
-			arr[0] = position;
-			arr[1] = data[position].sollRPM;
-			request.put({
-				url: 'http://localhost:5000/api/fans/'+(position+1),
-				form: arr
-				}, function(err, res, body) {
-				console.log(res);
-			});
-		}
+		encoderHandler(0);
 	} else {
 		//rechts
-		if(modi==0) {
-			if(position>=17) {
-				position=0;
-			} else {
-				position++;
-			}
-			mainWindow.webContents.send('item:position', position);
-		} else if(modi==1) {
-			data[position].sollRPM+=1;
-			mainWindow.webContents.send('item:rpm', data);
-			//post request
-			var arr = new Array();
-			arr[0] = position;
-			arr[1] = data[position].sollRPM;
-			request.put({
-				url: 'http://localhost:5000/api/fans/'+(position+1),
-				form: arr
-				}, function(err, res, body) {
-				console.log(res);
-			});
-		}
+		encoderHandler(1);
 	}
 });
+
+function errorHandler(err, desc='') {
+	if(errorState==1) return;
+	errorState=1;
+	mainWindow.webContents.send('error:send', err.message, desc);
+}
+
+function clearErrorState() {
+	errorState=0;
+	mainWindow.webContents.send('error:clear');
+}
