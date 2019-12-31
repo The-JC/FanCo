@@ -8,6 +8,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <inttypes.h>
+#include <math.h>
 #include "config.h"
 #include "usiTwiSlave.h"
 #include "pwm.h"
@@ -17,7 +18,6 @@
 //init
 uint16_t x, w;
 uint16_t counter;
-float factor;
 
 //communication
 volatile uint8_t i2cRegister[3];
@@ -81,12 +81,17 @@ void changeEvent() {
 
 void checkEvent() {
 	
-	//calculate
-	x = (counter/factor)*60000;
+	//calculate rpm
+	x = ((int)counter*60)/(2*COUNTS_PER_ROTATION*pow(REFRESH_SPEED, -1));
 	counter = 0;
 	
 	//pid correction
 	setDuCy(control(x, w));
+	
+	//split bytes for communication
+	i2cRegister[0] = (uint8_t) (x >> 8);
+	i2cRegister[1] = (uint8_t) x;
+	i2cRegister[2] = (uint8_t) getDuCy();
 }
 
 int main(void) {
@@ -95,9 +100,6 @@ int main(void) {
 	w = 0;
 	x = 0;
 	counter = 0;
-	
-	//correction factor
-	factor = 2*COUNTS_PER_ROTATION*(F_CPU/(float)TIMER_PRESCALER/256)*1000;
 	
 	//i2c init
     usiTwiSlaveInit(ADRESS);
@@ -122,7 +124,7 @@ int main(void) {
 	setFrequency(PWM_FREQUENCY);
 
 	//pin change
-	pinChangeInit(3);
+	pinChangeInit(PWM_PIN);
 	
 	//timer interrupt
 	ovfInit(REFRESH_SPEED);
@@ -137,11 +139,6 @@ int main(void) {
 		
 		//update i2c
 		TinyWireS_stop_check();
-		
-		//split bytes for communication
-		i2cRegister[0] = (uint8_t) (x >> 8);
-		i2cRegister[1] = (uint8_t) x;
-		i2cRegister[2] = (uint8_t) getDuCy();
     }
 }
 

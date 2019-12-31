@@ -31,17 +31,20 @@ uint8_t control(uint16_t x, uint16_t w) {
 	//control error
 	e = w-x;
 	
+	//factor
+	int factor = max_speed/100;
+	
 	//integral
-	integral += e*dt/20;
+	integral += e*dt/factor;
 	if(integral>100) integral=100;
 	if(integral<-100) integral=-100;
 	
 	//derivative
-	derivative = (e - previousError) / (dt*20);
+	derivative = (e - previousError) / (dt*factor);
 	previousError = e;
 	
 	//sum up control values
-	out = Kp*e/20 + integral*Ki + derivative * Kd;
+	out = Kp*e/factor + integral*Ki + derivative * Kd;
 	
 	//scale
 	if(out>100) out=100;

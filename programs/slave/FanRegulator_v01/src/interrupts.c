@@ -42,14 +42,16 @@ void ovfInit(float sec) {
 	
 	seconds = sec;
 	
-	//prescaler 4096
-	TCCR1 = 0;
-	TCCR1 |= (1<<CS10);
-	TCCR1 |= (1<<CS12);
-	TCCR1 |= (1<<CS13);
-
-	//enable counter interrupt
-	TIMSK |= (1<<TOIE1);
+	//0.5 seconds
+	TCCR1 = 0x8D;
+	//1.0 seconds
+	//TCCR1 = 0x8E;
+	
+	//compare
+	OCR1A = 0x97;
+	
+	//enable compare interrupt
+	TIMSK |= (1<<OCIE1A);
 }
 
 float getOvf(void) {
@@ -57,7 +59,7 @@ float getOvf(void) {
 	return seconds;
 }
 
-ISR(TIMER1_OVF_vect) {
+ISR(TIMER1_COMPA_vect) {
 	
 	//lower priority
 	sei();
