@@ -1,0 +1,17 @@
+Fan {
+    background-color: #257179;
+}
+
+QLabel#id {
+    font-size: 30px;
+    color: #111;
+}
+
+QLabel#setSpeed {
+    color: rgba(0, 0, 0, 0.8);
+    font-size: 15px;
+}
+
+QLabel#speed {
+    font-size: 18px;
+}
