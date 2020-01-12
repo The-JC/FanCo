@@ -8,21 +8,20 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <inttypes.h>
-#include <math.h>
 #include "config.h"
 #include "usiTwiSlave.h"
 #include "pwm.h"
 #include "interrupts.h"
 #include "pid.h"
 
-//init
-uint16_t x, w;
-uint16_t counter;
+//rpm
+uint16_t x, w, x_old;
+
+//counter interrupt
+volatile uint16_t counter, c;
 
 //communication
-volatile uint8_t i2cRegister[3];
-volatile uint8_t master_data[3];
-volatile uint8_t master_bytes;
+volatile uint8_t master_data[3], master_bytes;
 
 void receiveEvent(uint8_t num_bytes) {
 	
@@ -33,44 +32,34 @@ void receiveEvent(uint8_t num_bytes) {
 	}
 
 	//mode
-	uint16_t buffer;
+	uint16_t buffer =  master_data[1];
+	buffer = (buffer << 8) + master_data[2];
 	switch (master_data[0]) {
 		case 0x00:
 			//rpm
-			buffer = master_data[1];
-			buffer = (buffer << 8) + master_data[2];
 			w = buffer;
 			break;
 		case 0x01:
 			//p
-			buffer = master_data[1];
-			buffer = (buffer << 8) + master_data[2];
-			float kp = buffer/(double)1000;
-			setKp(kp);
+			setKp(buffer/1000);
 			break;
 		case 0x02:
 			//i
-			buffer = master_data[1];
-			buffer = (buffer << 8) + master_data[2];
-			float ki = buffer/(double)1000;
-			setKi(ki);
+			setKi(buffer/1000);
 			break;
 		case 0x03:
 			//d
-			buffer = master_data[1];
-			buffer = (buffer << 8) + master_data[2];
-			float kd = buffer/(double)1000;
-			setKd(kd);
+			setKd(buffer/1000);
 			break;
 	}
 }
 
 void requestEvent() {
 
-	//send to master
-	for(uint8_t i=0; i<3; i++) {
-		usiTwiTransmitByte(i2cRegister[i]);
-	}
+	//split bytes for communication
+	usiTwiTransmitByte(x>>8);
+	usiTwiTransmitByte(x);
+	usiTwiTransmitByte(getDuCy());
 }
 
 void changeEvent() {
@@ -82,21 +71,14 @@ void changeEvent() {
 void checkEvent() {
 	
 	//calculate rpm
-	x = ((int)counter*60)/(2*COUNTS_PER_ROTATION*pow(REFRESH_SPEED, -1));
+	c = counter;
 	counter = 0;
-	
-	//pid correction
-	setDuCy(control(x, w));
-	
-	//split bytes for communication
-	i2cRegister[0] = (uint8_t) (x >> 8);
-	i2cRegister[1] = (uint8_t) x;
-	i2cRegister[2] = (uint8_t) getDuCy();
 }
 
-int main(void) {
+int main() {
 	
 	//default
+	c = 0;
 	w = 0;
 	x = 0;
 	counter = 0;
@@ -124,18 +106,23 @@ int main(void) {
 	setFrequency(PWM_FREQUENCY);
 
 	//pin change
-	pinChangeInit(PWM_PIN);
+	pinChangeInit(TACHO_PIN);
 	
 	//timer interrupt
-	ovfInit(REFRESH_SPEED);
+	ovfInit();
 	
 	//enable interrupts
 	sei();
 	
-	//pinout
-	DDRB |= (1<<DDB1);
-	
-    while (1) {
+    while(1) {
+		
+		//calculation
+		x_old = x;
+		x = (c*60*REFRESH_SPEED)/(2*COUNTS_PER_ROTATION);
+		
+		//calculate correction error by deviation
+		if(((x-x_old)>DEVIATION)||((x_old-x)>DEVIATION))
+			setDuCy(control(x, w));
 		
 		//update i2c
 		TinyWireS_stop_check();

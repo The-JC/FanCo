@@ -9,34 +9,31 @@
 
 //local variables
 uint8_t power, range;
-uint32_t frequenz;
+uint32_t frequency;
 
 //public functions
-void pwmInit(void) {
+void pwmInit() {
 	
 	//enable fast pwm
-	TCCR0A |= (1<<WGM02)|(1<<WGM01)|(1<<WGM00)|(1<<COM0B1);
-
-	//prescaler 1
-	TCCR0B = 0;
-	TCCR0B |= (1<<WGM02)|(1 << CS00);
+	TCCR0A = 0x23;
+	TCCR0B = 0x09;
+	//pinout
+	DDRB |= 0x01;
 }
 
 void setFrequency(uint32_t f) {
 	
 	//frequency
-	frequenz = f;
-	
+	frequency = f;
 	//range
-	range = F_CPU/(PWM_PRESCALER*frequenz);
-	
+	range = F_CPU/(PWM_PRESCALER*frequency);
 	//top value
 	OCR0A = range;
 }
 
 uint32_t getFrequency() {
 	
-	return frequenz;
+	return frequency;
 }
 
 void setDuCy(uint8_t p) {

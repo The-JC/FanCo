@@ -26,7 +26,7 @@ void pidInit(float p, float i, float d, uint16_t mp) {
 uint8_t control(uint16_t x, uint16_t w) {
 
 	//init variables
-	int derivative, out, e;	//overflow bug derivative (int to long)
+	int derivative, out, e;
 	
 	//control error
 	e = w-x;
@@ -71,8 +71,8 @@ void setKd(float kd) {
 	Kd = kd;
 }
 
-void setDt(float t) {
+void setDt(float time) {
 	
 	//set refresh speed
-	dt = t;
+	dt = time;
 }

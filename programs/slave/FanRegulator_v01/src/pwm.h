@@ -16,11 +16,15 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-//prototypes
+//initialisation of PWM mode
 void pwmInit(void);
-void setFrequency(uint32_t);
+//set new PWM frequency
+void setFrequency(uint32_t frequency);
+//get PWM frequency
 uint32_t getFrequency(void);
-void setDuCy(uint8_t);
+//set new power of PWM in percent
+void setDuCy(uint8_t power);
+//get power of PWM in percent
 uint8_t getDuCy(void);
 
 #endif /* PWM_H_ */
