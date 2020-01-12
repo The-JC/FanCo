@@ -15,6 +15,8 @@
 # Precompiled Headers
 *.gch
 *.pch
+*._pch.h.cpp
+ui_*.h
 
 # Libraries
 *.lib
@@ -49,10 +51,12 @@
 modules.order
 Module.symvers
 Mkfile.old
+Makefile*
 dkms.conf
 
 #Debug
 Debug/
+*.debug
 
 #IDEs
 .settings/
@@ -65,9 +69,61 @@ mx.scratch
 *.atsln
 *.xml
 
+# Vim temporary files
+.*swp
+
+# Visual Studio generated files
+*.ib_pdb_index
+*.sln
+*.suo
+*.vcproj
+*vcproj.*.*.user
+*.ncb
+*.sdf
+*.opensdf
+*.vcxproj
+*vcxproj.*
+
 #nodejs
 node_modules/
 package-lock.json
 
 .vscode/
 venv/
+*~
+*.autosave
+*.core
+*.moc
+*.orig
+*.rej
+*_resource.rc
+*.qm
+.#*
+*.*#
+core
+!core/
+tags
+.DS_Store
+.directory
+*.prl
+*.app
+moc_*.cpp
+qrc_*.cpp
+Thumbs.db
+*.res
+*.rc
+/.qmake.cache
+/.qmake.stash
+
+# qtcreator generated files
+*.pro.user*
+
+# xemacs temporary files
+*.flc
+
+# MinGW generated files
+*.Debug
+*.Release
+
+# Python byte code
+*.pyc
