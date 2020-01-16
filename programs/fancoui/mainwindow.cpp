@@ -92,10 +92,11 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 void MainWindow::mainloop() {
-//	for(int i=0; i<FANS; ++i) {
-//		fans[i]->acquireData();
-//	}
-	fans[0]->acquireData();
+	for(int i=0; i<FANS; ++i) {
+		fans[i]->acquireData();
+	}
+//	fans[0]->acquireData();
+//	fans[1]->acquireData();
 }
 
 void MainWindow::encoderTurned(int value) {

@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <pigpiod_if2.h>
 #include "global.h"
+#include "config.h"
 
 #define CLK 21 // GPIO A
 #define DATA 20 // GPIO B
@@ -20,9 +21,17 @@ Encoder::Encoder(QObject *parent) : QObject(parent) {
     qDebug() << "Loading encoder";
 
 	lastTurn = new QElapsedTimer;
+	holdTime = new QElapsedTimer;
+
+	releaseCheckTimer = new QTimer(this);
+	releaseCheckTimer->setSingleShot(true);
+	connect(releaseCheckTimer, &QTimer::timeout, this, &Encoder::releaseCheckTimerOverflow);
+	connect(this, &Encoder::realeaseCheckTimerStart, releaseCheckTimer, QOverload<int>::of(&QTimer::start));
+	connect(this, &Encoder::realeaseCheckTimerStop, releaseCheckTimer, &QTimer::stop);
 
 	levA=0; levB=0;
 	step = 0;
+	encoderTurned = false;
 
 	// Activate PWR pin to power encoder
 	set_mode(pi, PWR, PI_OUTPUT);
@@ -60,9 +69,30 @@ void Encoder::_pulseEx(int pi, unsigned gpio, unsigned level, uint32_t tick, voi
 		encoder->_pulse(gpio, level, tick);
 }
 
+void Encoder::releaseCheckTimerOverflow() {
+	qDebug() << "HOLD";
+	emit press(HOLD);
+}
+
 void Encoder::_switch(unsigned int gpio, unsigned int level, uint32_t tick) {
 	if(level == 1) {
-		emit press(SHORT_PRESS);
+		if(holdTime->nsecsElapsed() < SHORT_PRESS_TIME * 1000000) {
+			qDebug() << "Short press";
+			emit press(SHORT_PRESS);
+			emit realeaseCheckTimerStop();
+		} else if(holdTime->nsecsElapsed() > LONG_PRESS_TIME * 1000000 && !encoderTurned) {
+			qDebug() << "Long press";
+			emit press(LONG_PRESS);
+		} else {
+			emit press(RELEASE);
+			qDebug() << "Rising Edge with " << holdTime->nsecsElapsed();
+		}
+	}
+	if(level == 0) {
+		qDebug() << "Timer started";
+		holdTime->start();
+		emit realeaseCheckTimerStart(SHORT_PRESS_TIME);
+		encoderTurned = false;
 	}
 }
 
@@ -80,10 +110,8 @@ void Encoder::_pulse(unsigned gpio, unsigned level, uint32_t tick) {
 			detent = step / 4;
 			step += inc;
 			if(detent != (step / 4)) {
-				if(!velocityControlEnable)
-					emit turn(step / 4);
-				else
-					emit turn(velocityControl(step / 4));
+				encoderTurned = true;
+				emit turn(velocityControl(step / 4));
 				step = 0;
 			}
 		}
@@ -91,16 +119,18 @@ void Encoder::_pulse(unsigned gpio, unsigned level, uint32_t tick) {
 }
 
 int Encoder::velocityControl(int dir) {
-	if(lastTurn->isValid()) {
-		if(dir == lastTurn_dir) {
-			if(lastTurn->nsecsElapsed() < 100 * 1000000) {
-				dir *= 10;
+	if(velocityControlEnable) {
+		if(lastTurn->isValid()) {
+			if(dir == lastTurn_dir) {
+				if(lastTurn->nsecsElapsed() < 100 * 1000000) {
+					dir *= 10;
+				}
 			}
 		}
+		lastTurn_dir = dir;
+		qDebug() << "Vel Control" << dir;
 	}
-	lastTurn_dir = dir;
 	lastTurn->start();
-	qDebug() << "Vel Control" << dir;
 	return dir;
 }
 
