@@ -20,11 +20,13 @@ public:
 private:
 	QWidget *parent;
 	QLabel *set_speed_label;
+	QLabel *speed_label;
 	QLineSeries *speed;
 	QChart *chart;
 	QChartView *chartViewer;
 	QTimer *chartUpdateTimer;
 public slots:
+	void setSetSpeed(int value);
 	void setSpeed(int value);
 	void updateChart(std::valarray<int> &data);
 signals:

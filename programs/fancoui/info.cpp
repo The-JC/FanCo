@@ -18,7 +18,7 @@ Info::Info(QWidget *parent) : QWidget(parent) {
 	QGridLayout *layout = new QGridLayout(this);
 	layout->setMargin(0);
 
-	QLabel *id = new QLabel(QString::number(fan->getFanId()));
+	QLabel *id = new QLabel(QString::number(fan->getFanId()+1));
 	id->setMargin(10);
 	id->setAlignment(Qt::AlignTop);
 	layout->addWidget(id, 0, 0, 1, 2);
@@ -58,10 +58,17 @@ Info::Info(QWidget *parent) : QWidget(parent) {
 	set_speed_label = new QLabel("Set Speed: " + QString::number(fan->set_speed));
 	set_speed_label->setMargin(0);
 	layout->addWidget(set_speed_label, 2, 0);
+
+	speed_label = new QLabel("Speed: " + QString::number(0));
+	layout->addWidget(speed_label, 2, 1);
+}
+
+void Info::setSetSpeed(int newValue) {
+	set_speed_label->setText("Set Speed: " + QString::number(newValue));
 }
 
 void Info::setSpeed(int newValue) {
-	set_speed_label->setText("Set Speed: " + QString::number(newValue));
+	speed_label->setText("Speed: " + QString::number(newValue));
 }
 
 void Info::updateChart(std::valarray<int> &data) {

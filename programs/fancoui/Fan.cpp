@@ -32,13 +32,14 @@ Fan::Fan(QWidget *parent, const int fanid, const uint8_t address)
 	this->plotData = std::valarray<int>(PLOTLEN+1);
 	this->set_speed = 0;
 	this->info = new Info(this);
-	connect(this, &Fan::setSpeedChanged, this->info, &Info::setSpeed);
+	connect(this, &Fan::setSpeedChanged, this->info, &Info::setSetSpeed);
+	connect(this, &Fan::speedChanged, this->info, &Info::setSpeed);
 
 	QVBoxLayout *layout = new QVBoxLayout(this);
 	layout->setMargin(0);
 	layout->setSpacing(0);
 
-	QLabel *id = new QLabel(QString::number(fanid), this);
+	QLabel *id = new QLabel(QString::number(fanid+1), this);
 	id->setObjectName("id");
 	id->setAlignment(Qt::AlignCenter);
 	id->setMargin(0);
@@ -63,6 +64,8 @@ Fan::Fan(QWidget *parent, const int fanid, const uint8_t address)
 
 void Fan::acquireData() {
 	if(client < 0) return;
+
+	if(this->i2c_addres < 3) return;
 
 	if(ioctl(client, I2C_SLAVE, i2c_addres)<0) {
 		qFatal("Failed to acquire bus access and/or talk to slave");
@@ -91,8 +94,35 @@ void Fan::acquireData() {
 	emit chartDataChanged(plotData);
 }
 
+void Fan::sendData() {
+	if(client < 0) return;
+
+	if(this->i2c_addres < 3) return;
+
+	if(ioctl(client, I2C_SLAVE, i2c_addres) < 0) {
+		qFatal("Failed to acquire bus access and/or talk to slave");
+		return;
+	}
+
+	uint8_t buffer[2];
+
+	buffer[0] = static_cast<uint8_t>(set_speed);
+	buffer[1] = static_cast<uint8_t>(set_speed >> 8);
+
+	if(i2c_smbus_write_i2c_block_data(client, SEND_RPM, 2, buffer)) {
+		qCritical() << "Failed writing to I2C device!";
+	} else {
+		qDebug() << "Successful send data";
+	}
+}
+
 void Fan::increaseSpeed(int inc) {
 	this->setSpeed(this->set_speed + inc);
+	if(this->set_speed < 0) {
+		this->setSpeed(0);
+	} else if(this->set_speed > MAXSPEED) {
+		this->setSpeed(MAXSPEED);
+	}
 }
 
 void Fan::setSpeed(int value) {
@@ -100,6 +130,7 @@ void Fan::setSpeed(int value) {
 	emit setSpeedChanged(this->set_speed);
 
 	set_speed_label->setText(QString::number(this->set_speed) + " RPM");
+	sendData();
 }
 
 int Fan::getFanId() {

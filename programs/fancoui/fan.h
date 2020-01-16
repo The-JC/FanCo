@@ -7,6 +7,13 @@
 #include "info.h"
 #include "config.h"
 
+enum SEND_MODES {
+	SEND_RPM = 0x0,
+	SEND_P,
+	SEND_I,
+	SEND_D
+};
+
 class Fan : public QWidget {
     Q_OBJECT
 private:
@@ -18,6 +25,7 @@ private:
 	std::valarray<int> plotData;
 	QLabel *set_speed_label;
 	QLabel *speed_label;
+	void sendData(void);
 
 public:
 	Fan(QWidget *parent = 0, const int id = -1, const uint8_t address = 0xFF);
