@@ -112,15 +112,25 @@ void MainWindow::encoderTurned(int value) {
 }
 
 void MainWindow::buttonPress(int type) {
-	if(type == SHORT_PRESS) {
-		qDebug() << "Short Button PRESS";
-		if(stack->currentIndex() != 0) {
-			encoder->setVelocityControl(false);
-			stack->setCurrentIndex(0);
-		} else {
-			encoder->setVelocityControl(true);
-			stack->setCurrentIndex(position+1);
-		}
+	switch (type) {
+		case SHORT_PRESS:
+			if(stack->currentIndex() != 0) {
+				encoder->setVelocityControl(false);
+				stack->setCurrentIndex(0);
+			} else {
+				encoder->setVelocityControl(true);
+				stack->setCurrentIndex(position+1);
+			}
+			break;
+		case LONG_PRESS:
+			break;
+		case HOLD:
+			break;
+		case RELEASE:
+			break;
+		default:
+			qWarning() << "[Warning] Invalid button press type!";
+			break;
 	}
 }
 
