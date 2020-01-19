@@ -8,7 +8,7 @@
 #define CONFIG_H_
 
 //adress
-#define ADRESS 0x04
+#define ADDRESS 0x04
 
 //pwm
 #define PWM_FREQUENCY 10000
@@ -27,7 +27,7 @@
 #define DEVIATION 100
 
 //do not change
-#define F_CPU 1000000
+//#define F_CPU 1000000
 #define PWM_PRESCALER 1
 #define TACHO_PIN 3
 

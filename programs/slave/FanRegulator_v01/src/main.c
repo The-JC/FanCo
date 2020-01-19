@@ -5,6 +5,8 @@
  */ 
 
 //includes
+#include "main.h"
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <inttypes.h>
@@ -84,7 +86,7 @@ int main() {
 	counter = 0;
 	
 	//i2c init
-    usiTwiSlaveInit(ADRESS);
+    usiTwiSlaveInit(ADDRESS);
 	
 	//i2c callback
 	usi_onReceiverPtr = *receiveEvent;
