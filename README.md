@@ -22,7 +22,7 @@ FanCo is made up of two fundamental components. The master managing the UI and l
 2. Insert SD card into the pi. Start it check if it boots.
 3. Run ```sudo apt-get update & upgrade ``` to update all packages.
 4. Make sure you've downloaded and installed pigpiod from http://abyz.me.uk/rpi/pigpio/download.html.
-5. Download the latest version of FanCo from  
+5. Download the latest version of FanCoUI from  
 https://github.com/The-JC/Rflw/releases/latest
     > You can use ```wget``` to directly download the binary to the RaspberryPi.
 6. To run the FanCo UI run ```./fanco``` in the installation directory.
@@ -41,7 +41,20 @@ https://github.com/The-JC/Rflw/releases/latest
     ```
 
 ### II. Slave
->You will need avrdude for flashing the program to the Slaves
+#### Requirments
+>You will need [avrdude](http://www.nongnu.org/avrdude/) for flashing the program to the Slaves  
+>Also you will need avr-gcc installed to compile the program.  
+>You can install both on Ubuntu or Debian by running ```sudo apt-get install avrdude gcc-avr```
+1. Connect the programmer and the slave, like shown in the following picture
+![Connection](/docs/images/programming.svg)
+2. Connect the programmer to the computer.
+3. Change your current directory to ```cd programs/slave/FanRegulator_v01```
+4. Change the slave address line ```#define ADDRESS 0xXX``` in ```include/config.h``` starting with 0x04
+5. Configure the build by running ```cmake -B build .``` in the root directory of *FanRegulator_v01*
+6. Go to the build directory by running ```cd build```
+7. Run the following command to compile the program and flash it to the microcontroller: ```make flash```
+8. Repeat the previous steps for every other microcontroller only changing the I2C address.
+
 
 ### III. Cabling
 - Connect the rotary encoder, slave(s) and the display to the Raspberry Pi following the below scheme.
@@ -76,3 +89,4 @@ The slave counts pulses(n) received on the tacho pin in a set interval(dt). By c
 - Extended logs
 - Remote control API
 - init.d start script
+- Enclosure
