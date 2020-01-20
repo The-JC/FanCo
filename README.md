@@ -6,6 +6,14 @@ FanCo is also capable of logging fan speeds over a longer period for later analy
 
 FanCo is made up of two fundamental components. The master managing the UI and logging. And second, the slave, measuring actual speeds and compensate fluctuations in speed. Each Slave is capable of regulating up to 4 fans. Further slaves can be connected via cables to expand the maximum amounts of fans and also remove the number of control cables needed. 
 
+## Table of contents
+- [Requirements](#Requirements)
+- [Installation](#Installation)
+- [Usage](#Usage)
+- [Principle of operation](#Principle%20of%20operation)
+- [Troubleshooting](#Troubleshooting)
+- [ToDo](#ToDo)
+
 ## Requirements
 - RaspberryPi Zero (W) or 1 (2 or later only works with custom build)
 - Slave PCB manufactured and soldered from your favorite Chinese manufacturer (see [Parts List](/circuits/slave/bom.pdf)).
@@ -14,7 +22,6 @@ FanCo is made up of two fundamental components. The master managing the UI and l
 - A rotary encoder as an input
 - One or more 4-pin fans
 - A 5V power supply to provide power to the Raspberry Pi and the Display
-
 
 ## Installation
 ### I. RaspberryPi  
@@ -41,9 +48,10 @@ https://github.com/The-JC/Rflw/releases/latest
     ```
 
 ### II. Slave
-#### Requirments
->You will need [avrdude](http://www.nongnu.org/avrdude/) for flashing the program to the Slaves  
->Also you will need avr-gcc installed to compile the program.  
+> **Requirments**  
+>You will need [avrdude](http://www.nongnu.org/avrdude/) for flashing the program to the Slaves.
+>Also you will need avr-gcc installed to compile the program.
+>Further the build system CMake and make is required.
 >You can install both on Ubuntu or Debian by running ```sudo apt-get install avrdude gcc-avr```
 1. Connect the programmer and the slave, like shown in the following picture
 ![Connection](/docs/images/programming.svg)
@@ -55,6 +63,7 @@ https://github.com/The-JC/Rflw/releases/latest
 7. Run the following command to compile the program and flash it to the microcontroller: ```make flash```
 8. Repeat the previous steps for every other microcontroller only changing the I2C address.
 
+>**NOTE:** Currently only a USBasp programmer is the supported. We´re are working on supporting other programmer types like ArduinoISP. If you can't wait, you could also flash the binaries manualy using avrdude.
 
 ### III. Cabling
 - Connect the rotary encoder, slave(s) and the display to the Raspberry Pi following the below scheme.
@@ -66,6 +75,9 @@ https://github.com/The-JC/Rflw/releases/latest
 
 ## Principle of operation
 The slave counts pulses(n) received on the tacho pin in a set interval(dt). By calculating f=n/dt you`ll get the frequency(f) of the input signal. Further multiplication x60 converts the frequency from 1/t in s to min which equals RPMs (revolutions per minute).
+Previously calculated speed is used for fine-tuning the fans set signal, to achieve a steady and constant speed at the desired speed.  
+Further, the acquired data is requested by the master (RaspberyPi) every second. For logging, displaying and synchronization purposes.  
+Firstly it´s averaged out to compensate for measurement and transmission errors. It later gets stored for logging and plotting purposes.
 
 ![Schema](/docs/images/schema.svg)
 
@@ -83,10 +95,10 @@ The slave counts pulses(n) received on the tacho pin in a set interval(dt). By c
     - Reads X X X as byte-value -> restart all slaves
     - Reads some byte-value -> all should be good try updating FanCoUI to the latest version.
 
-
 ## ToDo
 - Interval programming
 - Extended logs
 - Remote control API
 - init.d start script
 - Enclosure
+- Flow dependent speed control
