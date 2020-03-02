@@ -8,6 +8,7 @@
 #include "fan.h"
 #include "encoder.h"
 #include "info.h"
+#include "popup.h"
 
 #define FANS 18
 
@@ -30,6 +31,9 @@ private:
 	Encoder *encoder;
 	Fan *fans[FANS];
 	int position;
+	Popup *popup;
+
+	void showGlobalChange();
 public slots:
 	void mainloop(void);
 	void encoderTurned(int turns);

@@ -16,7 +16,6 @@ MainWindow::MainWindow(QWidget *parent)
 {
 	qInfo() << "Starting FanCo";
 
-
 	/*
 	 * Initalize the GPIOs and I2C
 	 */
@@ -65,6 +64,7 @@ MainWindow::MainWindow(QWidget *parent)
 	QGridLayout *grid = new QGridLayout(this);
 	mainwindow->setLayout(grid);
 
+	// Initalize all fans
 	for(int i=0; i<FANS; ++i) {
 		fans[i] = new Fan(this, i, addresses[i]);
 		grid->addWidget(fans[i], i/6, i%6);
@@ -76,10 +76,15 @@ MainWindow::MainWindow(QWidget *parent)
 
 	this->position = 0;
 
+	// Connect encoder events to mainwindow
 	connect(encoder, &Encoder::turn, this, &MainWindow::encoderTurned);
 	connect(encoder, &Encoder::press, this, &MainWindow::buttonPress);
 
 	stack->setCurrentIndex(0);
+
+	popup = new Popup(this);
+	popup->raise();
+	stack->addWidget(popup);
 
 
 	QTimer *mainloop = new QTimer(this);
@@ -95,8 +100,6 @@ void MainWindow::mainloop() {
 	for(int i=0; i<FANS; ++i) {
 		fans[i]->acquireData();
 	}
-//	fans[0]->acquireData();
-//	fans[1]->acquireData();
 }
 
 void MainWindow::encoderTurned(int value) {
@@ -123,14 +126,20 @@ void MainWindow::buttonPress(int type) {
 			}
 			break;
 		case LONG_PRESS:
+			popup->hide();
 			break;
 		case HOLD:
+			popup->activateWindow();
+			popup->show();
+			popup->raise();
 			break;
 		case RELEASE:
+			popup->hide();
 			break;
 		default:
 			qWarning() << "[Warning] Invalid button press type!";
 			break;
+>>>>>>> Stashed changes
 	}
 }
 

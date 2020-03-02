@@ -21,7 +21,8 @@ SOURCES += \
     global.cpp \
     info.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    popup.cpp
 
 HEADERS += \
     config.h \
@@ -29,7 +30,8 @@ HEADERS += \
     fan.h \
     global.h \
     info.h \
-    mainwindow.h
+    mainwindow.h \
+    popup.h
 
 FORMS += \
     mainwindow.ui

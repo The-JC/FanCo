@@ -15,3 +15,7 @@ QLabel#setSpeed {
 QLabel#speed {
     font-size: 18px;
 }
+
+Popup {
+    background-color: rgba(244, 244, 244, 0.8);
+}
