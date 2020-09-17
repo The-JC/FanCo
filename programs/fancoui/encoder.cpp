@@ -62,7 +62,7 @@ Encoder::Encoder(QObject *parent) : QObject(parent) {
 }
 
 void Encoder::_pulseEx(int pi, unsigned gpio, unsigned level, uint32_t tick, void *user) {
-	Encoder *encoder = (Encoder *) user;
+	Encoder *encoder = static_cast<Encoder*>(user);
 	if(gpio==SWITCH)
 		encoder->_switch(gpio, level, tick);
 	else
@@ -76,11 +76,11 @@ void Encoder::releaseCheckTimerOverflow() {
 
 void Encoder::_switch(unsigned int gpio, unsigned int level, uint32_t tick) {
 	if(level == 1) {
-		if(holdTime->nsecsElapsed() < SHORT_PRESS_TIME * 1000000) {
+		if(holdTime->nsecsElapsed() < SHORT_PRESS_TIME * 1000000LL) {
 			qDebug() << "Short press";
 			emit press(SHORT_PRESS);
 			emit realeaseCheckTimerStop();
-		} else if(holdTime->nsecsElapsed() > LONG_PRESS_TIME * 1000000 && !encoderTurned) {
+		} else if(holdTime->nsecsElapsed() > LONG_PRESS_TIME * 1000000LL && !encoderTurned) {
 			qDebug() << "Long press";
 			emit press(LONG_PRESS);
 		} else {
@@ -97,9 +97,9 @@ void Encoder::_switch(unsigned int gpio, unsigned int level, uint32_t tick) {
 }
 
 void Encoder::_pulse(unsigned gpio, unsigned level, uint32_t tick) {
-	int newState, inc, detent;
-
 	if(level != PI_TIMEOUT) {
+		int newState, inc, detent;
+
 		if(gpio == CLK) levA = level;
 		if(gpio == DATA) levB = level;
 

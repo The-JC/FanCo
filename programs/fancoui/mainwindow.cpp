@@ -139,7 +139,6 @@ void MainWindow::buttonPress(int type) {
 		default:
 			qWarning() << "[Warning] Invalid button press type!";
 			break;
->>>>>>> Stashed changes
 	}
 }
 

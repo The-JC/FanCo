@@ -22,7 +22,6 @@ Fan::Fan(QWidget *parent, const int fanid, const uint8_t address)
 
 	if(fanid == -1) {
 		throw "FanId of must be given";
-		return;
 	}
 	this->fanid = fanid;
 	if(address > 127) {

@@ -13,7 +13,7 @@
 Info::Info(QWidget *parent) : QWidget(parent) {
 	this->parent = parent;
 
-	Fan *fan = (Fan *) parent;
+	Fan *fan = static_cast<Fan*>(parent);
 
 	QGridLayout *layout = new QGridLayout(this);
 	layout->setMargin(0);
