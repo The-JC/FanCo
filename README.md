@@ -1,4 +1,7 @@
 # FanCo
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e620460b83344056b6eef0aaacb07cdc)](https://app.codacy.com/manual/The-JC/FanCo?utm_source=github.com&utm_medium=referral&utm_content=The-JC/FanCo&utm_campaign=Badge_Grade_Dashboard)
+
 ![GitHub release](https://img.shields.io/github/v/release/The-JC/FanCo?color=brightgreen&include_prereleases)  
 FanCo is an advanced wind tunnel fan controller. Monitoring and regulating up to 120 fans individually with its custom UI or the API. 
 The UI navigation is simple and intuitive utilizing just a rotary encoder.
